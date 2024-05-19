@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Singing Pronunciation App</title>
+    <style>
+      .lyrics {
+        cursor: pointer;
+      }
+      .highlight {
+        background-color: yellow;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Consonant Modification preceding app</h1>
+    <br />
+    <textarea id="inputText" rows="30" cols="80"></textarea><br />
+    <button onclick="processLyrics()">Convert Lyrics</button>
+    <div id="lyricsContainer"></div>
+    <button onclick="copyToClipboard()">Copy to Clipboard</button>
+
+    <script>
+      function processLyrics() {
+        let lyrics = document.getElementById("inputText").value;
+        let words = lyrics.split(/\s+/);
+        let processedWords = words.map((word) => {
+          return `<span class="lyrics" onclick="modifyWord(this)">${word}</span>`;
+        });
+        document.getElementById("lyricsContainer").innerHTML =
+          processedWords.join(" ");
+      }
+
+      function modifyWord(element) {
+        const darkVowels = [
+          "ou",
+          "al",
+          "eye",
+          "ide",
+          "o",
+          "ite",
+          "ar",
+          "oo",
+          "you",
+          "the",
+          "and",
+        ];
+        const brightVowels = [
+          "igh",
+          "ix",
+          "is",
+          "et",
+          "es",
+          "at",
+          "as",
+          "phe",
+          "ow",
+          "we",
+          "me",
+          "be",
+          "ee",
+          "ea",
+          "ay",
+          "are",
+          "an",
+        ];
+
+        const standaloneDarkVowels = ["i"]; // 'i' as a standalone word is treated as dark
+        const standaloneBrightVowels = ["a", "i"]; // 'a' and 'i' in words are treated as bright
+
+        if (element.classList.contains("highlight")) {
+          element.classList.remove("highlight");
+          element.innerHTML = element.getAttribute("data-original"); // Revert to original text
+        } else {
+          let originalWord = element.textContent;
+          let modifiedWord = originalWord;
+          let found = false;
+
+          // Check for standalone dark vowels
+          standaloneDarkVowels.forEach((vowel) => {
+            let re = new RegExp(`\\b${vowel}\\b`, "gi");
+            if (modifiedWord.match(re)) {
+              modifiedWord = modifiedWord.replace(re, (match) => `Y${match}`);
+              found = true;
+            }
+          });
+
+          // Check for general dark vowels if no standalone dark vowel was found
+          if (!found) {
+            darkVowels.forEach((vowel) => {
+              let re = new RegExp(vowel, "gi");
+              if (modifiedWord.match(re)) {
+                modifiedWord = modifiedWord.replace(re, (match) => `Y${match}`);
+                found = true;
+              }
+            });
+          }
+
+          // Check for standalone bright vowels if no dark vowels found
+          if (!found) {
+            standaloneBrightVowels.forEach((vowel) => {
+              let re = new RegExp(`\\b${vowel}\\b`, "gi");
+              if (modifiedWord.match(re)) {
+                modifiedWord = modifiedWord.replace(re, (match) => `R${match}`);
+                found = true;
+              }
+            });
+          }
+
+          // Check the general bright vowels if no matches found yet
+          if (!found) {
+            brightVowels.forEach((vowel) => {
+              let re = new RegExp(vowel, "gi");
+              if (modifiedWord.match(re)) {
+                modifiedWord = modifiedWord.replace(re, (match) => `R${match}`);
+              }
+            });
+          }
+
+          element.classList.add("highlight");
+          element.setAttribute("data-original", originalWord);
+          element.innerHTML = modifiedWord; // Display modified text
+        }
+      }
+
+      function copyToClipboard() {
+        const text = document.getElementById("lyricsContainer").innerText;
+        navigator.clipboard.writeText(text).then(
+          () => {
+            alert("Text copied to clipboard");
+          },
+          (err) => {
+            alert("Failed to copy text: " + err);
+          }
+        );
+      }
+    </script>
+  </body>
+</html>
