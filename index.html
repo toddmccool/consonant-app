@@ -15,7 +15,13 @@
   <body>
     <h1>Consonant Modification preceding app</h1>
     <br />
-    <textarea id="inputText" rows="30" cols="80"></textarea><br />
+    <textarea
+      id="inputText"
+      rows="20"
+      cols="80"
+      placeholder="place lyrics here"
+    ></textarea
+    ><br />
     <button onclick="processLyrics()">Convert Lyrics</button>
     <div id="lyricsContainer"></div>
     <button onclick="copyToClipboard()">Copy to Clipboard</button>
@@ -23,12 +29,16 @@
     <script>
       function processLyrics() {
         let lyrics = document.getElementById("inputText").value;
-        let words = lyrics.split(/\s+/);
-        let processedWords = words.map((word) => {
-          return `<span class="lyrics" onclick="modifyWord(this)">${word}</span>`;
+        let lines = lyrics.split("\n");
+        let processedLines = lines.map((line) => {
+          let words = line.split(/\s+/);
+          let processedWords = words.map((word) => {
+            return `<span class="lyrics" onclick="modifyWord(this)">${word}</span>`;
+          });
+          return processedWords.join(" ");
         });
         document.getElementById("lyricsContainer").innerHTML =
-          processedWords.join(" ");
+          processedLines.join("<br>");
       }
 
       function modifyWord(element) {
@@ -41,14 +51,20 @@
           "ite",
           "ar",
           "oo",
-          "you",
           "the",
-          "and",
+          "my",
+          "up",
+          "aw",
+          "igh",
+          "ew",
         ];
         const brightVowels = [
-          "igh",
+          "and",
+          "ad",
           "ix",
+          "im",
           "is",
+          "in",
           "et",
           "es",
           "at",
@@ -62,10 +78,11 @@
           "ea",
           "ay",
           "are",
+          "air",
           "an",
         ];
 
-        const standaloneDarkVowels = ["i"]; // 'i' as a standalone word is treated as dark
+        const standaloneDarkVowels = ["i", "my"]; // 'i' as a standalone word is treated as dark
         const standaloneBrightVowels = ["a", "i"]; // 'a' and 'i' in words are treated as bright
 
         if (element.classList.contains("highlight")) {
@@ -76,21 +93,40 @@
           let modifiedWord = originalWord;
           let found = false;
 
-          // Check for standalone dark vowels
-          standaloneDarkVowels.forEach((vowel) => {
-            let re = new RegExp(`\\b${vowel}\\b`, "gi");
-            if (modifiedWord.match(re)) {
-              modifiedWord = modifiedWord.replace(re, (match) => `Y${match}`);
-              found = true;
+          // Specific case for the word "you"
+          if (originalWord.toLowerCase() === "you") {
+            modifiedWord = "Yyou";
+            found = true;
+          }
+
+          // Function to insert a character before the first vowel
+          function insertBeforeFirstVowel(word, char) {
+            const vowels = "aeiouAEIOU";
+            for (let i = 0; i < word.length; i++) {
+              if (vowels.includes(word[i])) {
+                return word.slice(0, i) + char + word.slice(i);
+              }
             }
-          });
+            return word;
+          }
+
+          // Check for standalone dark vowels
+          if (!found) {
+            standaloneDarkVowels.forEach((vowel) => {
+              let re = new RegExp(`\\b${vowel}\\b`, "gi");
+              if (modifiedWord.match(re)) {
+                modifiedWord = modifiedWord.replace(re, (match) => `Y${match}`);
+                found = true;
+              }
+            });
+          }
 
           // Check for general dark vowels if no standalone dark vowel was found
           if (!found) {
             darkVowels.forEach((vowel) => {
               let re = new RegExp(vowel, "gi");
               if (modifiedWord.match(re)) {
-                modifiedWord = modifiedWord.replace(re, (match) => `Y${match}`);
+                modifiedWord = insertBeforeFirstVowel(modifiedWord, "Y");
                 found = true;
               }
             });
@@ -112,7 +148,7 @@
             brightVowels.forEach((vowel) => {
               let re = new RegExp(vowel, "gi");
               if (modifiedWord.match(re)) {
-                modifiedWord = modifiedWord.replace(re, (match) => `R${match}`);
+                modifiedWord = insertBeforeFirstVowel(modifiedWord, "R");
               }
             });
           }
