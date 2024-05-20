@@ -10,10 +10,13 @@
       .highlight {
         background-color: yellow;
       }
+      #lyricsContainer {
+        white-space: pre-wrap;
+      }
     </style>
   </head>
   <body>
-    <h1>Consonant Modification preceding app</h1>
+    <h1>Consonant Modification Preceding App</h1>
     <br />
     <textarea
       id="inputText"
@@ -28,146 +31,172 @@
 
     <script>
       function processLyrics() {
-        let lyrics = document.getElementById("inputText").value;
-        let lines = lyrics.split("\n");
-        let processedLines = lines.map((line) => {
-          let words = line.split(/\s+/);
-          let processedWords = words.map((word) => {
-            return `<span class="lyrics" onclick="modifyWord(this)">${word}</span>`;
+        const lyrics = document.getElementById("inputText").value;
+        const lines = lyrics.split("\n");
+        const processedLines = lines.map((line) => {
+          const words = line.split(/\s+/).map((word) => {
+            return `<span class="lyrics" data-original="${word}" onclick="modifyWord(this)">${word}</span>`;
           });
-          return processedWords.join(" ");
+          return words.join(" ");
         });
         document.getElementById("lyricsContainer").innerHTML =
-          processedLines.join("<br>");
+          processedLines.join("\n");
       }
 
       function modifyWord(element) {
-        const darkVowels = [
-          "ou",
-          "al",
-          "eye",
-          "ide",
-          "o",
-          "ite",
-          "ar",
-          "oo",
-          "the",
-          "my",
-          "up",
-          "aw",
-          "igh",
-          "ew",
-        ];
-        const brightVowels = [
-          "and",
-          "ad",
-          "ix",
-          "im",
-          "is",
-          "in",
-          "et",
-          "es",
-          "at",
-          "as",
-          "phe",
-          "ow",
-          "we",
-          "me",
-          "be",
-          "ee",
-          "ea",
-          "ay",
-          "are",
-          "air",
-          "an",
-        ];
+        const vowelConversions = {
+          ough: "oo", // must handle ou followed by gh specifically
+          ange: "ayng",
+          ome: "uh",
+          ea: "ee",
+          are$: "ayr", // '$' ensures "are" is at the end of the word
+          "^are$": "ahr", // '^' and '$' ensure "are" is a standalone word
+          ide: "ahd",
+          ite: "aht",
+          ow: "ae",
+          ou: "ae",
+          ight: "aht",
+          through: "throo",
+          own: "ohn",
+          oan: "ohn",
+          on: "ahn",
+          ar: "ahr",
+          ai: "ay",
+          ee: "ee",
+          ie: "ah",
+          ei: "ee",
+          oo: "oo",
+          ey: "ay",
+          aw: "ah",
+          ace: "ays",
+          ov: "oov",
+          some: "suhm",
+          tion: "shuhn",
+          ity: "ihtee",
+          er: "uhr",
+          ness: "ehs",
+          ism: "ihsm",
+          ment: "mehnt",
+          ant: "aent",
+          ship: "shihp",
+          age: "ayge",
+          ery: "ehry",
+          eve: "eev",
+          or: "ohr",
+          ing: "ihng",
+          ust: "uhst",
+          ire: "ahr",
+          ir: "ihr",
+          it: "iht",
+          ix: "ihx",
+          un: "uhn",
+          ap: "aep",
+          an: "aen",
+          in: "ihn",
+          the: "thuh",
+          my: "muh",
+          if: "ihf",
+          use: "ooz",
+          go: "goh",
+          to: "tuh",
+          el: "ehl",
+          oth: "uhth",
+          ut: "uht",
+          et: "eht",
+          ess: "ehs",
+          est: "ehst",
+          eck: "ehk",
+          ivi: "ihv",
+          um: "uhm",
+          as: "aes",
+          ike: "ahk",
+          this: "thihs",
+          up: "uhp",
+          ame: "aym",
+          ed: "ehd",
+          es: "ehs",
+          igh: "ah",
+          of: "uhv",
+          ew: "oo",
+          be: "bee",
+          owe: "oh",
+          she: "shee",
+          al: "ael",
+          oi: "oo",
+          isi: "ahz",
+          isen: "ihzn",
+          ise: "ahz",
+          isn: "ihzn",
+          is: "ihz",
+          ad: "aed",
+          at: "aet",
+          we$: "wee", // '$' ensures "we" is a whole word
+          ose$: "ooz", // '$' ensures "ose" is a suffix
+        };
 
-        const standaloneDarkVowels = ["i", "my"]; // 'i' as a standalone word is treated as dark
-        const standaloneBrightVowels = ["a", "i"]; // 'a' and 'i' in words are treated as bright
+        const darkVowels = ["oo", "oh", "uh", "ah", "oe", "oov"];
+        const brightVowels = ["ee", "ay", "ae", "ih", "eh"];
+
+        const standaloneVowels = {
+          i: "Yi",
+          a: "RYa",
+        };
 
         if (element.classList.contains("highlight")) {
           element.classList.remove("highlight");
-          element.innerHTML = element.getAttribute("data-original"); // Revert to original text
-        } else {
-          let originalWord = element.textContent;
-          let modifiedWord = originalWord;
-          let found = false;
-
-          // Specific case for the word "you"
-          if (originalWord.toLowerCase() === "you") {
-            modifiedWord = "Yyou";
-            found = true;
-          }
-
-          // Function to insert a character before the first vowel
-          function insertBeforeFirstVowel(word, char) {
-            const vowels = "aeiouAEIOU";
-            for (let i = 0; i < word.length; i++) {
-              if (vowels.includes(word[i])) {
-                return word.slice(0, i) + char + word.slice(i);
-              }
-            }
-            return word;
-          }
-
-          // Check for standalone dark vowels
-          if (!found) {
-            standaloneDarkVowels.forEach((vowel) => {
-              let re = new RegExp(`\\b${vowel}\\b`, "gi");
-              if (modifiedWord.match(re)) {
-                modifiedWord = modifiedWord.replace(re, (match) => `Y${match}`);
-                found = true;
-              }
-            });
-          }
-
-          // Check for general dark vowels if no standalone dark vowel was found
-          if (!found) {
-            darkVowels.forEach((vowel) => {
-              let re = new RegExp(vowel, "gi");
-              if (modifiedWord.match(re)) {
-                modifiedWord = insertBeforeFirstVowel(modifiedWord, "Y");
-                found = true;
-              }
-            });
-          }
-
-          // Check for standalone bright vowels if no dark vowels found
-          if (!found) {
-            standaloneBrightVowels.forEach((vowel) => {
-              let re = new RegExp(`\\b${vowel}\\b`, "gi");
-              if (modifiedWord.match(re)) {
-                modifiedWord = modifiedWord.replace(re, (match) => `R${match}`);
-                found = true;
-              }
-            });
-          }
-
-          // Check the general bright vowels if no matches found yet
-          if (!found) {
-            brightVowels.forEach((vowel) => {
-              let re = new RegExp(vowel, "gi");
-              if (modifiedWord.match(re)) {
-                modifiedWord = insertBeforeFirstVowel(modifiedWord, "R");
-              }
-            });
-          }
-
-          element.classList.add("highlight");
-          element.setAttribute("data-original", originalWord);
-          element.innerHTML = modifiedWord; // Display modified text
+          element.innerHTML = element.getAttribute("data-original");
+          return;
         }
+
+        let word = element.textContent;
+        element.setAttribute("data-original", word);
+
+        if (word.toLowerCase() === "you") {
+          word = "Yyou";
+        } else {
+          // Convert multi-letter vowel combinations and suffixes to phonetic equivalents first
+          Object.keys(vowelConversions).forEach((vowelCombo) => {
+            let re = new RegExp(vowelCombo, "gi");
+            word = word.replace(re, vowelConversions[vowelCombo]);
+          });
+
+          // Handle standalone vowels
+          Object.keys(standaloneVowels).forEach((vowel) => {
+            let re = new RegExp(`\\b${vowel}\\b`, "gi");
+            word = word.replace(re, standaloneVowels[vowel]);
+          });
+
+          // Ensure "it" remains "it"
+          word = word.replace(/\bit\b/gi, "it");
+
+          // Insert 'R' or 'Y' before the dark or bright vowel sounds (single evaluation pass)
+          word = insertRYBeforeVowelSounds(word, darkVowels, brightVowels);
+        }
+
+        element.classList.add("highlight");
+        element.innerHTML = word;
+      }
+
+      function insertRYBeforeVowelSounds(word, darkVowels, brightVowels) {
+        // Insert 'R' or 'Y' before the dark or bright vowel sounds
+        darkVowels.forEach((vowel) => {
+          let re = new RegExp(vowel, "gi");
+          word = word.replace(re, (match) => "Y" + match);
+        });
+
+        brightVowels.forEach((vowel) => {
+          let re = new RegExp(vowel, "gi");
+          word = word.replace(re, (match) => "R" + match);
+        });
+
+        return word;
       }
 
       function copyToClipboard() {
         const text = document.getElementById("lyricsContainer").innerText;
         navigator.clipboard.writeText(text).then(
-          () => {
-            alert("Text copied to clipboard");
-          },
-          (err) => {
-            alert("Failed to copy text: " + err);
-          }
+          () => alert("Text copied to clipboard"),
+          (err) => alert("Failed to copy text: " + err)
         );
       }
     </script>
