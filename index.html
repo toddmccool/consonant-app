@@ -52,11 +52,11 @@
           desert: "dehzrt",
           immer: "ihmmr",
           inner: "ihnr",
+          essie: "ehz",
           ough: "oo",
           ange: "ayng",
           im: "ihm",
           "i'": "ah'",
-
           ome: "uhm",
           owe: "oh",
           ea: "ee",
@@ -202,6 +202,10 @@
           });
         }
 
+        console.log(
+          `Word: ${element.textContent}, First Modification: ${firstModification}, Final Word: ${word}`
+        );
+
         element.innerHTML = word;
 
         if (firstModification === "R") {
@@ -217,21 +221,6 @@
           () => alert("Text copied to clipboard"),
           (err) => alert("Failed to copy text: " + err)
         );
-      }
-
-      function printLyrics() {
-        const printWindow = window.open("", "", "height=600,width=800");
-        printWindow.document.write("<html><head><title>Print Lyrics</title>");
-        printWindow.document.write(
-          "<style>.highlight { background-color: yellow; }.highlight-blue { background-color: lightblue; } #lyricsContainer { white-space: pre-wrap; }</style>"
-        );
-        printWindow.document.write("</head><body>");
-        printWindow.document.write(
-          document.getElementById("lyricsContainer").innerHTML
-        );
-        printWindow.document.write("</body></html>");
-        printWindow.document.close();
-        printWindow.print();
       }
     </script>
   </body>
