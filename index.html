@@ -59,7 +59,9 @@
           "i'": "ah'",
           ome: "uhm",
           owe: "oh",
+          ear: "eer",
           ea: "ee",
+          lea: "ee",
           are$: "ayr",
           "^are$": "ahr",
           ide: "ahd",
@@ -85,7 +87,6 @@
           some: "suhm",
           tion: "shuhn",
           ity: "ihtee",
-          er: "uhr",
           ness: "ehs",
           ism: "ihsm",
           ment: "mehnt",
@@ -144,15 +145,12 @@
           at: "aet",
           we$: "wee",
           ose$: "ooz",
+          // Added standalone "i" conversion
+          "\\bi\\b": "ah",
         };
 
         const darkVowels = ["oo", "oh", "uh", "ah", "oe", "oov"];
         const brightVowels = ["ee", "ay", "ae", "ih", "eh"];
-
-        const standaloneVowels = {
-          i: "Yi",
-          a: "RYa",
-        };
 
         if (
           element.classList.contains("highlight") ||
@@ -178,11 +176,6 @@
             word = word.replace(re, vowelConversions[vowelCombo]);
           });
 
-          Object.keys(standaloneVowels).forEach((vowel) => {
-            let re = new RegExp(`\\b${vowel}\\b`, "gi");
-            word = word.replace(re, standaloneVowels[vowel]);
-          });
-
           word = word.replace(/\bit\b/gi, "it");
 
           darkVowels.forEach((vowel) => {
@@ -202,6 +195,8 @@
           });
         }
 
+        word = replaceConsonants(word);
+
         console.log(
           `Word: ${element.textContent}, First Modification: ${firstModification}, Final Word: ${word}`
         );
@@ -213,6 +208,34 @@
         } else if (firstModification === "Y") {
           element.classList.add("highlight");
         }
+      }
+
+      function replaceConsonants(word) {
+        const consonantConversions = {
+          f: "v",
+          p: "b",
+          ck: "g",
+          ca: "ga",
+          cl: "gl",
+          k: "g",
+          t: "d",
+          s: "z",
+          q: "gw",
+          F: "V",
+          P: "B",
+          CK: "G",
+          K: "G",
+          T: "D",
+          S: "Z",
+          Q: "GW",
+        };
+
+        Object.keys(consonantConversions).forEach((consonant) => {
+          let re = new RegExp(consonant, "gi");
+          word = word.replace(re, consonantConversions[consonant]);
+        });
+
+        return word;
       }
 
       function copyToClipboard() {
